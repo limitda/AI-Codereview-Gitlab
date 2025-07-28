@@ -137,12 +137,13 @@ class FeishuNotifier:
         except Exception as e:
             logger.error(f"飞书消息发送失败! ", e)
 
-    def send_direct_message(self, open_id, content, msg_type='text'):
+    def send_direct_message(self, open_id, content, msg_type='text', title=None):
         """
         直接发送消息给指定用户
         :param open_id: 用户的open_id
         :param content: 消息内容
-        :param msg_type: 消息类型，支持text、rich_text等
+        :param msg_type: 消息类型，支持text、interactive等
+        :param title: 消息标题（interactive类型时使用）
         :return: 发送是否成功
         """
         if not self.enabled:
@@ -200,7 +201,7 @@ class FeishuNotifier:
                 "header": {
                     "title": {
                         "tag": "plain_text",
-                        "content": "AI-CR 日报"
+                        "content": title  # 使用参数化的标题
                     },
                     "template": "blue",
                     "padding": "12px 12px 12px 12px"

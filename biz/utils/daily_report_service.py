@@ -149,6 +149,7 @@ class DailyReportService:
             success = self.feishu_notifier.send_direct_message(
                 open_id=open_id,
                 content=report_content,
+                title='AI-CR 日报',
                 msg_type='interactive'
             )
 

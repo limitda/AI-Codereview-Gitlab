@@ -10,12 +10,18 @@ from biz.service.review_service import ReviewService
 from biz.utils.code_reviewer import CodeReviewer
 from biz.utils.im import notifier
 from biz.utils.log import logger
-
+from biz.utils.project_filter import project_filter
 
 
 def handle_push_event(webhook_data: dict, gitlab_token: str, gitlab_url: str, gitlab_url_slug: str):
     push_review_enabled = os.environ.get('PUSH_REVIEW_ENABLED', '0') == '1'
     try:
+        # 项目过滤检查
+        project_name = webhook_data['project']['name']
+        if not project_filter.should_review_project(project_name):
+            logger.info(f"项目 {project_name} 被过滤，跳过Push事件的代码审查")
+            return
+
         handler = PushHandler(webhook_data, gitlab_token, gitlab_url)
         logger.info('Push Hook event received')
         commits = handler.get_push_commits()
@@ -77,6 +83,12 @@ def handle_merge_request_event(webhook_data: dict, gitlab_token: str, gitlab_url
     '''
     merge_review_only_protected_branches = os.environ.get('MERGE_REVIEW_ONLY_PROTECTED_BRANCHES_ENABLED', '0') == '1'
     try:
+        # 项目过滤检查
+        project_name = webhook_data['project']['name']
+        if not project_filter.should_review_project(project_name):
+            logger.info(f"项目 {project_name} 被过滤，跳过Merge Request的代码审查")
+            return
+
         # 解析Webhook数据
         handler = MergeRequestHandler(webhook_data, gitlab_token, gitlab_url)
         logger.info('Merge Request Hook event received')
@@ -105,7 +117,7 @@ def handle_merge_request_event(webhook_data: dict, gitlab_token: str, gitlab_url
             project_name = webhook_data['project']['name']
             source_branch = object_attributes.get('source_branch', '')
             target_branch = object_attributes.get('target_branch', '')
-            
+
             if ReviewService.check_mr_last_commit_id_exists(project_name, source_branch, target_branch, last_commit_id):
                 logger.info(f"Merge Request with last_commit_id {last_commit_id} already exists, skipping review for {project_name}.")
                 return
@@ -166,6 +178,12 @@ def handle_merge_request_event(webhook_data: dict, gitlab_token: str, gitlab_url
 def handle_github_push_event(webhook_data: dict, github_token: str, github_url: str, github_url_slug: str):
     push_review_enabled = os.environ.get('PUSH_REVIEW_ENABLED', '0') == '1'
     try:
+        # 项目过滤检查
+        project_name = webhook_data['repository']['name']
+        if not project_filter.should_review_project(project_name):
+            logger.info(f"项目 {project_name} 被过滤，跳过GitHub Push事件的代码审查")
+            return
+
         handler = GithubPushHandler(webhook_data, github_token, github_url)
         logger.info('GitHub Push event received')
         commits = handler.get_push_commits()
@@ -227,6 +245,12 @@ def handle_github_pull_request_event(webhook_data: dict, github_token: str, gith
     '''
     merge_review_only_protected_branches = os.environ.get('MERGE_REVIEW_ONLY_PROTECTED_BRANCHES_ENABLED', '0') == '1'
     try:
+        # 项目过滤检查
+        project_name = webhook_data['repository']['name']
+        if not project_filter.should_review_project(project_name):
+            logger.info(f"项目 {project_name} 被过滤，跳过GitHub Pull Request的代码审查")
+            return
+
         # 解析Webhook数据
         handler = GithubPullRequestHandler(webhook_data, github_token, github_url)
         logger.info('GitHub Pull Request event received')
@@ -245,7 +269,7 @@ def handle_github_pull_request_event(webhook_data: dict, github_token: str, gith
             project_name = webhook_data['repository']['name']
             source_branch = webhook_data['pull_request']['head']['ref']
             target_branch = webhook_data['pull_request']['base']['ref']
-            
+
             if ReviewService.check_mr_last_commit_id_exists(project_name, source_branch, target_branch, github_last_commit_id):
                 logger.info(f"Pull Request with last_commit_id {github_last_commit_id} already exists, skipping review for {project_name}.")
                 return
