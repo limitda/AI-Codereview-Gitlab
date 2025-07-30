@@ -67,9 +67,12 @@ def handle_push_event(webhook_data: dict, gitlab_token: str, gitlab_url: str, gi
         ))
 
     except Exception as e:
-        error_message = f'服务出现未知错误: {str(e)}\n{traceback.format_exc()}'
-        notifier.send_notification(content=error_message)
-        logger.error('出现未知错误: %s', error_message)
+        # 记录详细错误到日志
+        detailed_error = f'服务出现未知错误: {str(e)}\n{traceback.format_exc()}'
+        logger.error('出现未知错误: %s', detailed_error)
+        # 发送用户友好的通知消息
+        user_friendly_message = f'AI代码审查服务暂时不可用: {str(e)}'
+        notifier.send_notification(content=user_friendly_message)
 
 
 def handle_merge_request_event(webhook_data: dict, gitlab_token: str, gitlab_url: str, gitlab_url_slug: str):
@@ -171,9 +174,12 @@ def handle_merge_request_event(webhook_data: dict, gitlab_token: str, gitlab_url
         )
 
     except Exception as e:
-        error_message = f'AI Code Review 服务出现未知错误: {str(e)}\n{traceback.format_exc()}'
-        notifier.send_notification(content=error_message)
-        logger.error('出现未知错误: %s', error_message)
+        # 记录详细错误到日志
+        detailed_error = f'AI Code Review 服务出现未知错误: {str(e)}\n{traceback.format_exc()}'
+        logger.error('出现未知错误: %s', detailed_error)
+        # 发送用户友好的通知消息
+        user_friendly_message = f'AI代码审查服务暂时不可用: {str(e)}'
+        notifier.send_notification(content=user_friendly_message)
 
 def handle_github_push_event(webhook_data: dict, github_token: str, github_url: str, github_url_slug: str):
     push_review_enabled = os.environ.get('PUSH_REVIEW_ENABLED', '0') == '1'
@@ -229,9 +235,12 @@ def handle_github_push_event(webhook_data: dict, github_token: str, github_url: 
         ))
 
     except Exception as e:
-        error_message = f'服务出现未知错误: {str(e)}\n{traceback.format_exc()}'
-        notifier.send_notification(content=error_message)
-        logger.error('出现未知错误: %s', error_message)
+        # 记录详细错误到日志
+        detailed_error = f'服务出现未知错误: {str(e)}\n{traceback.format_exc()}'
+        logger.error('出现未知错误: %s', detailed_error)
+        # 发送用户友好的通知消息
+        user_friendly_message = f'AI代码审查服务暂时不可用: {str(e)}'
+        notifier.send_notification(content=user_friendly_message)
 
 
 def handle_github_pull_request_event(webhook_data: dict, github_token: str, github_url: str, github_url_slug: str):
@@ -322,6 +331,9 @@ def handle_github_pull_request_event(webhook_data: dict, github_token: str, gith
             ))
 
     except Exception as e:
-        error_message = f'服务出现未知错误: {str(e)}\n{traceback.format_exc()}'
-        notifier.send_notification(content=error_message)
-        logger.error('出现未知错误: %s', error_message)
+        # 记录详细错误到日志
+        detailed_error = f'服务出现未知错误: {str(e)}\n{traceback.format_exc()}'
+        logger.error('出现未知错误: %s', detailed_error)
+        # 发送用户友好的通知消息
+        user_friendly_message = f'AI代码审查服务暂时不可用: {str(e)}'
+        notifier.send_notification(content=user_friendly_message)

@@ -93,7 +93,7 @@ class CodeReviewer(BaseReviewer):
                 "role": "user",
                 "content": self.prompts["user_message"]["content"].format(
                     diffs_text=diffs_text, commits_text=commits_text
-                ),
+                ) + '/no_think',
             },
         ]
         return self.call_llm(messages)
