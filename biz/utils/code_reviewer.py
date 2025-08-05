@@ -42,11 +42,26 @@ class BaseReviewer(abc.ABC):
             raise Exception(f"提示词配置加载失败: {e}")
 
     def call_llm(self, messages: List[Dict[str, Any]]) -> str:
-        """调用 LLM 进行代码审核"""
         logger.info(f"向 AI 发送代码 Review 请求, messages: {messages}")
-        review_result = self.client.completions(messages=messages)
-        logger.info(f"收到 AI 返回结果: {review_result}")
-        return review_result
+
+        primary_provider = os.getenv("LLM_PROVIDER", "openai")
+        backup_provider = os.getenv("LLM_BACKUP_PROVIDER")
+
+        try:
+            # 尝试主要服务
+            review_result = self.client.completions(messages=messages)
+            logger.info(f"收到 AI 返回结果: {review_result}")
+            return review_result
+        except Exception as e:
+            # 如果配置了备用服务，尝试备用服务
+            if backup_provider and backup_provider != primary_provider:
+                logger.info(f"尝试使用备用LLM服务: {backup_provider}")
+                backup_client = Factory().getClient(backup_provider)
+                review_result = backup_client.completions(messages=messages)
+                logger.info(f"备用服务返回结果: {review_result}")
+                return review_result
+            # 没有备用服务或备用服务相同，重新抛出原异常
+            raise e
 
     @abc.abstractmethod
     def review_code(self, *args, **kwargs) -> str:
